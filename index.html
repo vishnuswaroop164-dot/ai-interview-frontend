@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Interview Generator</title>
+</head>
+
+<body style="font-family: Arial; padding: 40px;">
+
+  <h1>Interview Question Generator</h1>
+
+  <input id="role" placeholder="Enter Role" />
+  <input id="skill" placeholder="Enter Skill" />
+
+  <button onclick="generate()">Generate</button>
+
+  <ul id="output"></ul>
+
+  <script>
+    async function generate() {
+      const role = document.getElementById("role").value;
+      const skill = document.getElementById("skill").value;
+
+      const res = await fetch("https://vishnuswaroop.app.n8n.cloud/webhook/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ role, skill })
+      });
+
+      const data = await res.json();
+
+      const output = document.getElementById("output");
+      output.innerHTML = "";
+
+      data.questions.forEach(q => {
+        const li = document.createElement("li");
+        li.textContent = q;
+        output.appendChild(li);
+      });
+    }
+  </script>
+
+</body>
+</html>
