@@ -2,24 +2,99 @@
 <html>
 <head>
   <title>AI Interview Generator</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: black;
+      color: #d4af37;
+    }
+
+    .page {
+      display: none;
+      height: 100vh;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .active {
+      display: flex;
+    }
+
+    input {
+      padding: 12px;
+      margin: 10px;
+      width: 260px;
+      background: black;
+      border: 1px solid #d4af37;
+      color: #d4af37;
+    }
+
+    button {
+      padding: 12px 25px;
+      background: #d4af37;
+      color: black;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+
+    button:hover {
+      background: gold;
+    }
+
+    ul {
+      max-width: 600px;
+      text-align: left;
+    }
+
+    .loader {
+      font-size: 20px;
+    }
+  </style>
 </head>
 
-<body style="font-family: Arial; padding: 40px;">
+<body>
 
-  <h1>Interview Question Generator</h1>
+<!-- PAGE 1 -->
+<div id="page1" class="page active">
+  <h1>AI Interview Generator</h1>
 
   <input id="role" placeholder="Enter Role" />
   <input id="skill" placeholder="Enter Skill" />
 
   <button onclick="generate()">Generate</button>
+</div>
 
-  <ul id="output"></ul>
+<!-- PAGE 2 -->
+<div id="page2" class="page">
+  <div id="loading" class="loader">⏳ Generating questions...</div>
 
-  <script>
-    async function generate() {
-      const role = document.getElementById("role").value;
-      const skill = document.getElementById("skill").value;
+  <ul id="questions" style="display:none;"></ul>
 
+  <button onclick="goBack()">⬅ Back</button>
+</div>
+
+<script>
+  async function generate() {
+    const role = document.getElementById("role").value;
+    const skill = document.getElementById("skill").value;
+
+    // Switch to page 2
+    document.getElementById("page1").classList.remove("active");
+    document.getElementById("page2").classList.add("active");
+
+    const loading = document.getElementById("loading");
+    const list = document.getElementById("questions");
+
+    loading.style.display = "block";
+    list.style.display = "none";
+    list.innerHTML = "";
+
+    try {
       const res = await fetch("https://vishnuswaroop.app.n8n.cloud/webhook-test/generate", {
         method: "POST",
         headers: {
@@ -30,16 +105,36 @@
 
       const data = await res.json();
 
-      const output = document.getElementById("output");
-      output.innerHTML = "";
+      // 2 second buffer
+      setTimeout(() => {
+        loading.style.display = "none";
+        list.style.display = "block";
 
-      data.questions.forEach(q => {
-        const li = document.createElement("li");
-        li.textContent = q;
-        output.appendChild(li);
-      });
+        if (!data.questions) {
+          list.innerHTML = "<li>❌ No questions received</li>";
+          console.log(data);
+          return;
+        }
+
+        data.questions.forEach(q => {
+          const li = document.createElement("li");
+          li.textContent = q;
+          list.appendChild(li);
+        });
+
+      }, 2000);
+
+    } catch (err) {
+      loading.innerText = "❌ Failed to fetch data";
+      console.error(err);
     }
-  </script>
+  }
+
+  function goBack() {
+    document.getElementById("page2").classList.remove("active");
+    document.getElementById("page1").classList.add("active");
+  }
+</script>
 
 </body>
 </html>
